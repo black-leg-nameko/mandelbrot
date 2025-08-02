@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>Mandelbrot</title>
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background: black;
+            }
+            canvas {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="mandelbrot"></canvas>
+        <script>
+            const canvas = document.getElementById("mandelbrot");
+            const ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let width = canvas.width;
+            let height = canvas.height;
+            let centerX = -0.5;
+            let centerY = 0;
+            let scale = 3.5;
+            const zoomSpeed = 0.985;
+
+            let mouseX = 0.5;
+            let mouseY = 0.5;
+
+            canvas.addEventListener("mousemove", (e) => {
+                            mouseX = e.offsetX / width;
+                            mouseY = e.offsetY / height;
+                        });
+            let draw = () => {
+                            const img = ctx.createImageData(width, height);
+                            const maxIter = 120;
+
+                            for (let x = 0; x < width; x++) {
+                                            for (let y = 0; y < height; y++) {
+                                                            const zx = (x / width - 0.5) * scale + centerX;
+                                                            const zy = (y / height - 0.5) * scale + centerY;
+                                                            let a = zx, b = zy
+                                                            let i = 0;
+
+                                                            while (a * a + b * b <= 16 && i < maxIter) {
+                                                                            const aa = a * a - b * b;
+                                                                            const bb = 2 * a * b;
+                                                                            a = aa + zx;
+                                                                            b = bb + zy;
+                                                                            i++;
+                                                                        }
+
+                                                            const pixel = (x + y * width) * 4;
+                                                            const t = i / maxIter;
+
+                                                            const red = Math.floor(200 * t);
+                                                            const green = Math.floor(120 * t * (1 - t));
+                                                            const blue = Math.floor(255 * t);
+
+                                                            img.data[pixel + 0] = red;
+                                                            img.data[pixel + 1] = green;
+                                                            img.data[pixel + 2] = blue;
+                                                            img.data[pixel + 3] = 255;
+                                                        }
+                                        }
+
+                            ctx.putImageData(img, 0, 0);
+                        }
+
+            let animate = () => {
+                            const targetX = (mouseX - 0.5) * scale + centerX;
+                            const targetY = (mouseY - 0.5) * scale + centerY;
+
+                            centerX += (targetX - centerX) * 0.03;
+                            centerY += (targetY - centerY) * 0.03;
+
+                            scale *= zoomSpeed;
+
+                            draw();
+                            requestAnimationFrame(animate);
+                        }
+            animate();
+        </script>
+    </body>
+</html>
